@@ -16,7 +16,7 @@ export const mutations = {
     }
   },
   DELETE_COMPANY (state, companyId) {
-    state.companies = state.compaines.filter(company => company.id !== companyId)
+    state.companies = state.companies.filter(company => company.id !== companyId)
   }
 }
 
@@ -27,6 +27,14 @@ export const actions = {
       commit('SET_COMPANIES', response.data.$values)
     } catch (error) {
       console.error('Firmaları çekerken hata oluştu:', error)
+    }
+  },
+  async fetchCompanyById ({ commit }, companyId) {
+    try {
+      const response = await this.$axios.get(`/api/Company/${companyId}`)
+      commit('SET_COMPANIES', [response.data])
+    } catch (error) {
+      console.error('Belirtilen ID\'ye göre firmayı çekerken hata oluştu:', error)
     }
   },
   async addCompany ({ commit }, company) {
@@ -58,5 +66,8 @@ export const actions = {
 export const getters = {
   getCompanies (state) {
     return state.companies
+  },
+  getCompanyById: state => (id) => {
+    return state.companies.find(company => company.id === id)
   }
 }

@@ -25,7 +25,7 @@ export default {
     RegisterForm
   },
   methods: {
-    async onRegisterSuccess (email, password) {
+    async onRegisterSuccess ({ email, password }) {
       try {
         await this.$auth.loginWith('local', {
           data: {
@@ -33,8 +33,6 @@ export default {
             password
           }
         })
-
-        this.$router.push('/user/dashboard')
       } catch (error) {
         console.error('Kayıt olma başarısız oldu:', error)
       }

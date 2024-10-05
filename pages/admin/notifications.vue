@@ -1,9 +1,8 @@
 <template>
-  <div>
+  <v-container fluid>
     <NotificationsManagement />
-  </div>
+  </v-container>
 </template>
-
 
 <script>
 import NotificationsManagement from '~/components/admin/NotificationsManagement.vue'

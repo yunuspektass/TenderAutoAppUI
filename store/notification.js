@@ -53,11 +53,25 @@ export const actions = {
     } catch (error) {
       console.error('Bildirim silerken hata:', error)
     }
+  },
+  async markAsRead ({ commit }, notificationId) {
+    try {
+      const notification = await this.$axios.get(`/api/Notification/${notificationId}`)
+      const updatedNotification = { ...notification.data, isRead: true }
+      const response = await this.$axios.put(`/api/Notification/${notificationId}`, updatedNotification)
+      commit('UPDATE_NOTIFICATION', response.data)
+    } catch (error) {
+      console.error('Bildirimi okundu olarak işaretlerken hata:', error)
+    }
   }
+
 }
 
 export const getters = {
   getNotifications: (state) => {
     return state.notifications
-  }
+  },
+  getUnreadNotificationsCount: state => state.notifications.filter(n => !n.isRead).length,
+  getUnreadNotificationsForUser: state => userId => state.notifications.filter(n => n.userId === userId && !n.isRead),
+  getNotificationsForUser: state => userId => state.notifications.filter(n => n.userId === userId)
 }

@@ -1,120 +1,131 @@
 <template>
-  <v-card>
-    <v-card-title>
-      Kullanıcı Yönetimi
-      <v-spacer />
-      <v-btn color="primary" @click="openAddUserDialog">
-        Yeni Kullanıcı Ekle
-      </v-btn>
-    </v-card-title>
-    <v-card-subtitle>Kullanıcıları görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.</v-card-subtitle>
-
-    <v-data-table
-      :headers="headers"
-      :items="users"
-      class="elevation-1"
-      item-value="id"
-      :items-per-page="10"
-    >
-      <template #[`item.roles`]="{ item }">
-        <v-expansion-panels flat>
-          <v-expansion-panel>
-            <v-expansion-panel-header>
-              Yetkileri Görüntüle
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <div v-for="userRole in getUserRolesByUserId(item.id)" :key="userRole.id">
-                {{ getRoleNameById(userRole.roleId) }}
-              </div>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </template>
-
-      <template #[`item.actions`]="{ item }">
-        <v-btn icon color="primary" @click="openEditUserDialog(item)">
-          <v-icon>mdi-pencil</v-icon>
+  <v-container v-if="!loading" fluid>
+    <v-card>
+      <v-card-title>
+        Kullanıcı Yönetimi
+        <v-spacer />
+        <v-btn color="primary" @click="openAddUserDialog">
+          Yeni Kullanıcı Ekle
         </v-btn>
-        <v-btn icon color="red" @click="deleteUser(item.id)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+      </v-card-title>
+      <v-card-subtitle>
+        Kullanıcıları görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
+      </v-card-subtitle>
 
-    <v-dialog v-model="dialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ dialogTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="form" v-model="formValid">
-            <v-text-field
-              v-model="user.name"
-              label="Ad"
-              :rules="[v => !!v || 'Ad zorunludur']"
-              required
-            />
-            <v-text-field
-              v-model="user.lastName"
-              label="Soyad"
-              :rules="[v => !!v || 'Soyad zorunludur']"
-              required
-            />
-            <v-text-field
-              v-model="user.email"
-              label="Email"
-              :rules="[v => !!v || 'Email zorunludur', v => /.+@.+\..+/.test(v) || 'Geçerli bir email adresi girin']"
-              required
-            />
-            <v-text-field
-              v-model="user.password"
-              label="Şifre"
-              type="password"
-              :rules="[v => !!v || 'Şifre zorunludur', v => v.length >= 6 || 'Şifre en az 6 karakter olmalıdır']"
-              required
-            />
-            <v-text-field
-              v-model="user.phoneNumber"
-              label="Telefon Numarası"
-              :rules="[v => !!v || 'Telefon numarası zorunludur', v => /^\d+$/.test(v) || 'Geçerli bir telefon numarası girin']"
-              required
-            />
-            <v-text-field
-              v-model="user.address"
-              label="Adres"
-              :rules="[v => !!v || 'Adres zorunludur']"
-              required
-            />
-            <v-select
-              v-model="user.roleIds"
-              :items="roles"
-              item-text="roleName"
-              item-value="id"
-              label="Rol Seç"
-              multiple
-              :rules="[v => v.length > 0 || 'En az bir rol seçilmelidir']"
-              required
-            />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="blue darken-1" text @click="closeDialog">
-            İptal
+      <v-data-table
+        :headers="headers"
+        :items="users"
+        class="elevation-1"
+        item-value="id"
+        :items-per-page="10"
+      >
+        <template #[`item.roles`]="{ item }">
+          <v-expansion-panels flat>
+            <v-expansion-panel>
+              <v-expansion-panel-header>
+                Yetkileri Görüntüle
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <div v-for="userRole in getUserRolesByUserId(item.id)" :key="userRole.id">
+                  {{ getRoleNameById(userRole.roleId) }}
+                </div>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </template>
+
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon color="primary" @click="openEditUserDialog(item)">
+            <v-icon>mdi-pencil</v-icon>
           </v-btn>
-          <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveUser">
-            Kaydet
+          <v-btn icon color="red" @click="deleteUser(item.id)">
+            <v-icon>mdi-delete</v-icon>
           </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+        </template>
+      </v-data-table>
+
+      <v-dialog v-model="dialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ dialogTitle }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-form ref="form" v-model="formValid" @submit.prevent="saveUser">
+              <v-text-field
+                v-model="user.name"
+                label="Ad"
+                :rules="[v => !!v || 'Ad zorunludur']"
+                required
+              />
+              <v-text-field
+                v-model="user.lastName"
+                label="Soyad"
+                :rules="[v => !!v || 'Soyad zorunludur']"
+                required
+              />
+              <v-text-field
+                v-model="user.email"
+                label="Email"
+                :rules="[v => !!v || 'Email zorunludur', v => /.+@.+\..+/.test(v) || 'Geçerli bir email adresi girin']"
+                required
+              />
+              <v-text-field
+                v-model="user.password"
+                label="Şifre"
+                type="password"
+                :rules="[v => !!v || 'Şifre zorunludur', v => v.length >= 6 || 'Şifre en az 6 karakter olmalıdır']"
+                required
+              />
+              <v-text-field
+                v-model="user.phoneNumber"
+                label="Telefon Numarası"
+                :rules="[v => !!v || 'Telefon numarası zorunludur', v => /^\d+$/.test(v) || 'Geçerli bir telefon numarası girin']"
+                required
+              />
+              <v-text-field
+                v-model="user.address"
+                label="Adres"
+                :rules="[v => !!v || 'Adres zorunludur']"
+                required
+              />
+              <v-select
+                v-model="user.roleIds"
+                :items="roles"
+                item-text="roleName"
+                item-value="id"
+                label="Rol Seç"
+                multiple
+                :rules="[v => v.length > 0 || 'En az bir rol seçilmelidir']"
+                required
+              />
+            </v-form>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="blue darken-1" text @click="closeDialog">
+              İptal
+            </v-btn>
+            <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveUser">
+              Kaydet
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-card>
+  </v-container>
+
+  <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
+    <v-row align="center" justify="center">
+      <v-progress-circular indeterminate color="primary" />
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
   data () {
     return {
+      loading: true,
       dialog: false,
       dialogTitle: '',
       formValid: false,
@@ -165,11 +176,20 @@ export default {
     }
   },
   created () {
-    this.$store.dispatch('user/fetchUsers')
-    this.$store.dispatch('user/fetchRoles')
-    this.$store.dispatch('userRole/fetchUserRoles')
+    this.fetchAllData()
   },
   methods: {
+    async fetchAllData () {
+      try {
+        await this.$store.dispatch('user/fetchUsers')
+        await this.$store.dispatch('user/fetchRoles')
+        await this.$store.dispatch('userRole/fetchUserRoles')
+      } catch (error) {
+        console.error('Veri çekerken hata:', error)
+      } finally {
+        this.loading = false
+      }
+    },
     openAddUserDialog () {
       this.dialogTitle = 'Yeni Kullanıcı Ekle'
       this.user = {
@@ -186,26 +206,16 @@ export default {
     },
     openEditUserDialog (user) {
       this.dialogTitle = 'Kullanıcıyı Düzenle'
+      const userRoles = this.getUserRolesByUserId(user.id)
       this.user = {
         ...user,
-        lastName: user.lastName,
-        roleIds: Array.isArray(user.roles) ? user.roles.map(role => role.id) : []
+        roleIds: Array.isArray(userRoles) ? userRoles.map(role => role.roleId || role.id) : []
       }
       this.dialog = true
     },
     closeDialog () {
       this.dialog = false
     },
-    async fetchAllData () {
-      try {
-        await this.$store.dispatch('user/fetchUsers')
-        await this.$store.dispatch('user/fetchRoles')
-        await this.$store.dispatch('userRole/fetchUserRoles')
-      } catch (error) {
-        console.error('Veri çekerken hata:', error)
-      }
-    },
-
     async saveUser () {
       if (this.$refs.form.validate()) {
         try {
@@ -220,9 +230,10 @@ export default {
         } finally {
           this.closeDialog()
         }
+      } else {
+        console.error('Form geçerli değil, lütfen tüm alanları doldurun.')
       }
     },
-
     async deleteUser (id) {
       try {
         await this.$store.dispatch('user/deleteUser', id)
@@ -234,3 +245,4 @@ export default {
   }
 }
 </script>
+4

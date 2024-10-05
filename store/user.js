@@ -1,5 +1,4 @@
 export const state = () => ({
-  userInfo: {},
   users: [],
   roles: []
 })
@@ -83,6 +82,8 @@ export const getters = {
   getRoles: (state) => {
     return state.roles
   },
+  getUserById: state => id => state.users.find(user => user.id === id),
+
   getTenderResponsibleUsers: (state) => {
     return state.users.filter((user) => {
       return user.roles && user.roles.$values.some(role =>

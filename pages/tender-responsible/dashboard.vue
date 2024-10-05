@@ -1,14 +1,14 @@
 <template>
   <v-container fluid>
-    <ProfileUpdate />
+    <HomePage />
   </v-container>
 </template>
 
 <script>
-import ProfileUpdate from '~/components/company/ProfileUpdate.vue'
+import HomePage from '~/components/tender-responsible/HomePage.vue'
 export default {
   components: {
-    ProfileUpdate
+    HomePage
   }
 }
 </script>

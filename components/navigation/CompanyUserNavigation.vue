@@ -5,21 +5,21 @@
         Firma İşlemleri
       </v-subheader>
 
+      <v-list-item to="/company/dashboard">
+        <v-list-item-icon>
+          <v-icon>mdi-home</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Ana Sayfa</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
       <v-list-item to="/company/tender-participation">
         <v-list-item-icon>
           <v-icon>mdi-gavel</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>İhalelere Katılma ve Teklif Verme</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-list-item to="/company/bid-view">
-        <v-list-item-icon>
-          <v-icon>mdi-currency-usd</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Firma Tekliflerinin Görüntülenmesi</v-list-item-title>
+          <v-list-item-title>İhale Teklif Yönetimi</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
@@ -28,7 +28,7 @@
           <v-icon>mdi-account-circle</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Firma Profil Bilgilerinin Güncellenmesi</v-list-item-title>
+          <v-list-item-title>Firma Profil Yönetimi</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
 
@@ -37,7 +37,7 @@
           <v-icon>mdi-trophy</v-icon>
         </v-list-item-icon>
         <v-list-item-content>
-          <v-list-item-title>Kazandığı İhaleler ve Detaylar</v-list-item-title>
+          <v-list-item-title>İhale ve Şirket Detayları</v-list-item-title>
         </v-list-item-content>
       </v-list-item>
     </v-list>

@@ -5,6 +5,15 @@
         Kullanıcı İşlemleri
       </v-subheader>
 
+      <v-list-item to="/user/dashboard">
+        <v-list-item-icon>
+          <v-icon>mdi-home</v-icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title>Ana Sayfa</v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+
       <v-list-item to="/user/open-tenders">
         <v-list-item-icon>
           <v-icon>mdi-format-list-bulleted</v-icon>

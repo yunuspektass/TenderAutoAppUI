@@ -1,11 +1,11 @@
 <template>
-  <div>
+  <v-container fluid>
     <ProductManagement />
-  </div>
+  </v-container>
 </template>
 
 <script>
-import ProductManagement from '@/components/admin/ProductManagement.vue';
+import ProductManagement from '@/components/admin/ProductManagement.vue'
 
 export default {
   components: {

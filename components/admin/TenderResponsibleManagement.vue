@@ -1,92 +1,101 @@
 <template>
-  <v-card>
-    <v-card-title>
-      İhale Sorumlusu Yönetimi
-      <v-spacer />
-      <v-btn color="primary" @click="openAddResponsibleDialog">
-        Yeni İhale Sorumlusu Ekle
-      </v-btn>
-    </v-card-title>
-    <v-card-subtitle>
-      İhale sorumlusu ekleyebilir, düzenleyebilir ve çıkarabilirsiniz.
-    </v-card-subtitle>
-    <v-data-table
-      :headers="headers"
-      :items="tenderResponsibleUsers"
-      class="elevation-1"
-      item-value="id"
-    >
-      <template #[`item.tenders`]="{ item }">
-        <v-expansion-panels flat>
-          <v-expansion-panel>
-            <v-expansion-panel-header>
-              Sorumlu Olduğu İhaleler
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <div v-for="tender in getTendersByUserId(item.id)" :key="tender.id">
-                {{ tender.title }}
-              </div>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </template>
-      <template #[`item.actions`]="{ item }">
-        <v-btn icon color="primary" @click="openEditResponsibleDialog(item)">
-          <v-icon>mdi-pencil</v-icon>
+  <v-container v-if="!loading" fluid>
+    <v-card>
+      <v-card-title>
+        İhale Sorumlusu Yönetimi
+        <v-spacer />
+        <v-btn color="primary" @click="openAddResponsibleDialog">
+          Yeni İhale Sorumlusu Ekle
         </v-btn>
-        <v-btn icon color="red" @click="deleteResponsible(item.id)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+      </v-card-title>
+      <v-card-subtitle>
+        İhale sorumlusu ekleyebilir, düzenleyebilir ve çıkarabilirsiniz.
+      </v-card-subtitle>
+      <v-data-table
+        :headers="headers"
+        :items="tenderResponsibleUsers"
+        class="elevation-1"
+        item-value="id"
+      >
+        <template #[`item.tenders`]="{ item }">
+          <v-expansion-panels flat>
+            <v-expansion-panel>
+              <v-expansion-panel-header>
+                Sorumlu Olduğu İhaleler
+              </v-expansion-panel-header>
+              <v-expansion-panel-content>
+                <div v-for="tender in getTendersByUserId(item.id)" :key="tender.id">
+                  {{ tender.title }}
+                </div>
+              </v-expansion-panel-content>
+            </v-expansion-panel>
+          </v-expansion-panels>
+        </template>
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon color="primary" @click="openEditResponsibleDialog(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon color="red" @click="deleteResponsible(item.id)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
 
-    <v-dialog v-model="dialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ dialogTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="form" v-model="formValid">
-            <v-select
-              v-if="!isEditMode"
-              v-model="selectedUserId"
-              :items="availableUsers"
-              item-text="fullName"
-              item-value="id"
-              label="Kullanıcı Seç"
-              :rules="[v => !!v || 'Kullanıcı seçilmelidir']"
-              required
-            />
-            <v-select
-              v-model="selectedTenderIds"
-              :items="tenders"
-              item-text="title"
-              item-value="id"
-              label="İhaleleri Seç"
-              :rules="[v => !!v || 'En az bir ihale seçilmelidir']"
-              multiple
-              required
-            />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="blue darken-1" text @click="closeDialog">
-            İptal
-          </v-btn>
-          <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveResponsible">
-            Kaydet
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+      <v-dialog v-model="dialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ dialogTitle }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-form ref="form" v-model="formValid">
+              <v-select
+                v-if="!isEditMode"
+                v-model="selectedUserId"
+                :items="availableUsers"
+                item-text="fullName"
+                item-value="id"
+                label="Kullanıcı Seç"
+                :rules="[v => !!v || 'Kullanıcı seçilmelidir']"
+                required
+              />
+              <v-select
+                v-model="selectedTenderIds"
+                :items="tenders"
+                item-text="title"
+                item-value="id"
+                label="İhaleleri Seç"
+                :rules="[v => !!v || 'En az bir ihale seçilmelidir']"
+                multiple
+                required
+              />
+            </v-form>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="blue darken-1" text @click="closeDialog">
+              İptal
+            </v-btn>
+            <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveResponsible">
+              Kaydet
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-card>
+  </v-container>
+
+  <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
+    <v-row align="center" justify="center">
+      <v-progress-circular indeterminate color="primary" />
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 export default {
   data () {
     return {
+      loading: true,
       dialog: false,
       dialogTitle: '',
       formValid: false,
@@ -127,12 +136,21 @@ export default {
     }
   },
   created () {
-    this.$store.dispatch('user/fetchUsers')
-    this.$store.dispatch('userRole/fetchUserRoles')
-    this.$store.dispatch('tender/fetchTenders')
-    this.$store.dispatch('userTender/fetchUserTenders')
+    this.initializeData()
   },
   methods: {
+    async initializeData () {
+      try {
+        await this.$store.dispatch('user/fetchUsers')
+        await this.$store.dispatch('userRole/fetchUserRoles')
+        await this.$store.dispatch('tender/fetchTenders')
+        await this.$store.dispatch('userTender/fetchUserTenders')
+      } catch (error) {
+        console.error('Veri yüklenirken hata oluştu:', error)
+      } finally {
+        this.loading = false
+      }
+    },
     openAddResponsibleDialog () {
       this.dialogTitle = 'Yeni İhale Sorumlusu Ekle'
       this.selectedUserId = null

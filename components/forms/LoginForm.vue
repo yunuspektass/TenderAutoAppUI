@@ -1,5 +1,5 @@
 <template>
-  <v-form @submit.prevent="login">
+  <v-form ref="form" v-model="formValid" @submit.prevent="login">
     <v-text-field
       v-model="email"
       label="Email"
@@ -7,6 +7,8 @@
       outlined
       required
       dense
+      prepend-icon="mdi-email"
+      :rules="[v => !!v || 'Email zorunludur', v => /.+@.+\..+/.test(v) || 'Geçerli bir email adresi girin']"
     />
     <v-text-field
       v-model="password"
@@ -15,6 +17,8 @@
       outlined
       required
       dense
+      prepend-icon="mdi-lock"
+      :rules="[v => !!v || 'Şifre zorunludur']"
     />
     <v-card-actions class="d-flex justify-end pa-0">
       <v-btn
@@ -35,11 +39,16 @@ export default {
     return {
       email: '',
       password: '',
-      loading: false
+      loading: false,
+      formValid: false
     }
   },
   methods: {
     login () {
+      if (!this.formValid) {
+        return
+      }
+
       this.loading = true
       this.$auth.loginWith('local', {
         data: {

@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <v-container fluid>
     <UserManagement />
-  </div>
+  </v-container>
 </template>
 
 <script>

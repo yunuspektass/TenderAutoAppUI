@@ -1,7 +1,7 @@
 <template>
-  <div>
+  <v-container fluid>
     <CompanyResponsibleManagement />
-  </div>
+  </v-container>
 </template>
 
 <script>

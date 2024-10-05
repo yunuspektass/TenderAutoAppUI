@@ -24,7 +24,7 @@ export const actions = {
   async fetchTenders ({ commit }) {
     try {
       const response = await this.$axios.get('/api/Tender')
-      commit('SET_TENDERS', response.data.$values) // Veriyi Vuex'e kaydederken $values'ı çıkarıyoruz
+      commit('SET_TENDERS', response.data.$values)
     } catch (error) {
       console.error('İhaleleri çekerken hata:', error)
     }
@@ -56,5 +56,7 @@ export const actions = {
 }
 
 export const getters = {
-  getTenders: state => state.tenders
+  getTenders: state => state.tenders,
+  getTenderById: state => id => state.tenders.find(tender => tender.id === id),
+  getFinishedTenders: state => state.tenders.filter(tender => tender.isFinished === true)
 }

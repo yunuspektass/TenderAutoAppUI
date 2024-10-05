@@ -126,14 +126,10 @@ export default {
             address: this.address
           })
 
-          await this.$auth.loginWith('local', {
-            data: {
-              email: this.email,
-              password: this.password
-            }
+          this.$emit('register-success', {
+            email: this.email,
+            password: this.password
           })
-
-          this.$emit('register-success')
         } catch (error) {
           console.error('Kayıt başarısız oldu:', error)
         }

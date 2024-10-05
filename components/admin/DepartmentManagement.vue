@@ -1,58 +1,67 @@
 <template>
-  <v-card>
-    <v-card-title>
-      Birim Yönetimi
-      <v-spacer />
-      <v-btn color="primary" @click="openAddUnitDialog">
-        Yeni Birim Ekle
-      </v-btn>
-    </v-card-title>
-    <v-card-subtitle>
-      Birimleri görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
-    </v-card-subtitle>
-    <v-data-table
-      :headers="headers"
-      :items="units"
-      class="elevation-1"
-      item-value="id"
-    >
-      <template #[`item.actions`]="{ item }">
-        <v-btn icon color="primary" @click="openEditUnitDialog(item)">
-          <v-icon>mdi-pencil</v-icon>
+  <v-container v-if="!loading" fluid>
+    <v-card>
+      <v-card-title>
+        Birim Yönetimi
+        <v-spacer />
+        <v-btn color="primary" @click="openAddUnitDialog">
+          Yeni Birim Ekle
         </v-btn>
-        <v-btn icon color="red" @click="deleteUnit(item.id)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
-    </v-data-table>
+      </v-card-title>
+      <v-card-subtitle>
+        Birimleri görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
+      </v-card-subtitle>
+      <v-data-table
+        :headers="headers"
+        :items="units"
+        class="elevation-1"
+        item-value="id"
+      >
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon color="primary" @click="openEditUnitDialog(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon color="red" @click="deleteUnit(item.id)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
+      </v-data-table>
 
-    <v-dialog v-model="dialog" max-width="600px">
-      <v-card>
-        <v-card-title>
-          <span class="headline">{{ dialogTitle }}</span>
-        </v-card-title>
-        <v-card-text>
-          <v-form ref="form" v-model="formValid">
-            <v-text-field
-              v-model="unit.unitName"
-              label="Birim Adı"
-              :rules="[v => !!v || 'Birim adı zorunludur']"
-              required
-            />
-          </v-form>
-        </v-card-text>
-        <v-card-actions>
-          <v-spacer />
-          <v-btn color="blue darken-1" text @click="closeDialog">
-            İptal
-          </v-btn>
-          <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveUnit">
-            Kaydet
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-  </v-card>
+      <v-dialog v-model="dialog" max-width="600px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">{{ dialogTitle }}</span>
+          </v-card-title>
+          <v-card-text>
+            <v-form ref="form" v-model="formValid">
+              <v-text-field
+                v-model="unit.unitName"
+                label="Birim Adı"
+                :rules="[v => !!v || 'Birim adı zorunludur']"
+                required
+              />
+            </v-form>
+          </v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn color="blue darken-1" text @click="closeDialog">
+              İptal
+            </v-btn>
+            <v-btn color="blue darken-1" text :disabled="!formValid" @click="saveUnit">
+              Kaydet
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-card>
+  </v-container>
+
+  <!-- Loading spinner -->
+  <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
+    <v-row align="center" justify="center">
+      <v-progress-circular indeterminate color="primary" />
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -62,6 +71,7 @@ export default {
       dialog: false,
       dialogTitle: '',
       formValid: false,
+      loading: true,
       unit: {
         id: null,
         unitName: ''
@@ -78,10 +88,18 @@ export default {
       return Array.isArray(units) ? units : []
     }
   },
-  created () {
-    this.$store.dispatch('unit/fetchUnits')
+  async created () {
+    await this.loadUnits()
+    this.loading = false
   },
   methods: {
+    async loadUnits () {
+      try {
+        await this.$store.dispatch('unit/fetchUnits')
+      } catch (error) {
+        console.error('Birimler yüklenirken hata:', error)
+      }
+    },
     openAddUnitDialog () {
       this.dialogTitle = 'Yeni Birim Ekle'
       this.resetUnitData()
@@ -109,7 +127,7 @@ export default {
             await this.$store.dispatch('unit/fetchUnitById', this.unit.id)
           } else {
             await this.$store.dispatch('unit/addUnit', this.unit)
-            await this.$store.dispatch('unit/fetchUnitById', this.unit.id)
+            await this.$store.dispatch('unit/fetchUnits')
           }
         } catch (error) {
           console.error('Birim kaydedilirken hata:', error)
@@ -118,7 +136,6 @@ export default {
         }
       }
     },
-
     async deleteUnit (id) {
       try {
         await this.$store.dispatch('unit/deleteUnit', id)

@@ -13,7 +13,7 @@ export default {
     if (store.getters.roles.includes('Admin')) {
       return redirect('/admin/dashboard')
     } else if (store.getters.roles.includes('TenderResponsible')) {
-      return redirect('/tender/dashboard')
+      return redirect('/tender-responsible/dashboard')
     } else if (store.getters.roles.includes('CompanyUser')) {
       return redirect('/company/dashboard')
     } else if (store.getters.roles.includes('User')) {

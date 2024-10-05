@@ -1,40 +1,42 @@
 <template>
-  <v-card>
-    <v-card-title>
-      Firma Yönetimi
-      <v-spacer />
-      <v-btn color="primary" @click="openAddCompanyDialog">
-        Yeni Firma Ekle
-      </v-btn>
-    </v-card-title>
-    <v-card-subtitle>
-      Firmaları görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
-    </v-card-subtitle>
-    <v-data-table
-      :headers="headers"
-      :items="companies"
-      class="elevation-1"
-      item-value="id"
-    >
-      <template #[`item.actions`]="{ item }">
-        <v-btn icon color="primary" @click="openEditCompanyDialog(item)">
-          <v-icon>mdi-pencil</v-icon>
+  <v-container v-if="!loading" fluid>
+    <v-card>
+      <v-card-title>
+        Firma Yönetimi
+        <v-spacer />
+        <v-btn color="primary" @click="openAddCompanyDialog">
+          Yeni Firma Ekle
         </v-btn>
-        <v-btn icon color="red" @click="deleteCompany(item.id)">
-          <v-icon>mdi-delete</v-icon>
-        </v-btn>
-      </template>
+      </v-card-title>
+      <v-card-subtitle>
+        Firmaları görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
+      </v-card-subtitle>
+      <v-data-table
+        :headers="headers"
+        :items="companies"
+        class="elevation-1"
+        item-value="id"
+      >
+        <template #[`item.actions`]="{ item }">
+          <v-btn icon color="primary" @click="openEditCompanyDialog(item)">
+            <v-icon>mdi-pencil</v-icon>
+          </v-btn>
+          <v-btn icon color="red" @click="deleteCompany(item.id)">
+            <v-icon>mdi-delete</v-icon>
+          </v-btn>
+        </template>
 
-      <template #[`expanded-item`]="{ headers, item }">
-        <td :colspan="headers.length">
-          <v-list dense>
-            <v-list-item v-for="tender in getTendersByCompany(item.id)" :key="tender.id">
-              <v-list-item-content>{{ tender.title }} - {{ tender.budget | formatCurrency }}</v-list-item-content>
-            </v-list-item>
-          </v-list>
-        </td>
-      </template>
-    </v-data-table>
+        <template #[`expanded-item`]="{ headers, item }">
+          <td :colspan="headers.length">
+            <v-list dense>
+              <v-list-item v-for="tender in getTendersByCompany(item.id)" :key="tender.id">
+                <v-list-item-content>{{ tender.title }} - {{ tender.budget | formatCurrency }}</v-list-item-content>
+              </v-list-item>
+            </v-list>
+          </td>
+        </template>
+      </v-data-table>
+    </v-card>
 
     <v-dialog v-model="dialog" max-width="600px">
       <v-card>
@@ -96,7 +98,13 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </v-card>
+  </v-container>
+
+  <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
+    <v-row align="center" justify="center">
+      <v-progress-circular indeterminate color="primary" />
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -106,6 +114,7 @@ export default {
       dialog: false,
       dialogTitle: '',
       formValid: false,
+      loading: true,
       company: {
         id: null,
         companyName: '',
@@ -136,12 +145,20 @@ export default {
       return this.$store.getters['tender/getTenders']
     }
   },
-  created () {
-    this.$store.dispatch('company/fetchCompanies')
-    this.$store.dispatch('companyTender/fetchCompanyTenders')
-    this.$store.dispatch('tender/fetchTenders')
+  async created () {
+    await this.initializeData()
+    this.loading = false // Veriler yüklendikten sonra loading false yapılır
   },
   methods: {
+    async initializeData () {
+      try {
+        await this.$store.dispatch('company/fetchCompanies')
+        await this.$store.dispatch('companyTender/fetchCompanyTenders')
+        await this.$store.dispatch('tender/fetchTenders')
+      } catch (error) {
+        console.error('Veri yüklenirken hata oluştu:', error)
+      }
+    },
     getTendersByCompany (companyId) {
       return this.companyTenders
         .filter(tender => tender.company.id === companyId)
