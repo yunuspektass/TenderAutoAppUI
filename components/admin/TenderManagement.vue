@@ -98,7 +98,6 @@
         </v-tab-item>
       </v-tabs-items>
 
-      <!-- İhale Ekle/Düzenle Dialog -->
       <v-dialog v-model="dialog" max-width="800px">
         <v-card>
           <v-card-title>
@@ -283,7 +282,7 @@ export default {
     tenderResponsibleUsers () {
       return this.getUsers.map(user => ({
         id: user.id,
-        name: user.name
+        name: `${user.name} ${user.lastName}`
       }))
     }
   },
@@ -311,7 +310,7 @@ export default {
     },
     getUserById (id) {
       const user = this.getUsers.find(user => user.id === id)
-      return user ? user.name : 'Bilinmeyen Kullanıcı'
+      return user ? `${user.name} ${user.lastName}` : 'Bilinmeyen Kullanıcı'
     },
     getProductById (id) {
       const product = this.products.find(product => product.id === id)
