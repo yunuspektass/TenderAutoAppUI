@@ -1,40 +1,53 @@
 <template>
-  <v-navigation-drawer app color="indigo" dark>
-    <v-list dense>
-      <v-subheader class="white--text">
-        Kullanıcı İşlemleri
-      </v-subheader>
+  <div>
+    <v-navigation-drawer
+      app
+      color="indigo"
+      dark
+      :permanent="$vuetify.breakpoint.mdAndUp"
+      :temporary="$vuetify.breakpoint.smAndDown"
+      v-model="drawer"
+    >
+      <v-list dense>
+        <v-subheader class="white--text">
+          Kullanıcı İşlemleri
+        </v-subheader>
 
-      <v-list-item to="/user/dashboard">
-        <v-list-item-icon>
-          <v-icon>mdi-home</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Ana Sayfa</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
+        <v-list-item v-for="item in menuItems" :key="item.title" :to="item.to">
+          <v-list-item-icon>
+            <v-icon>{{ item.icon }}</v-icon>
+          </v-list-item-icon>
+          <v-list-item-content>
+            <v-list-item-title>{{ item.title }}</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </v-list>
+    </v-navigation-drawer>
 
-      <v-list-item to="/user/open-tenders">
-        <v-list-item-icon>
-          <v-icon>mdi-format-list-bulleted</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>Açık İhalelerin Görüntülenmesi</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-
-      <v-list-item to="/user/tender-details">
-        <v-list-item-icon>
-          <v-icon>mdi-file-eye</v-icon>
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title>İhale Detayları ve Sonuçlarının İncelenmesi</v-list-item-title>
-        </v-list-item-content>
-      </v-list-item>
-    </v-list>
-  </v-navigation-drawer>
+    <v-app-bar-nav-icon
+      @click.stop="drawer = !drawer"
+      class="d-md-none white--text"
+      style="position: fixed; top: 8px; left: 8px; z-index: 1000;"
+      v-show="!drawer"
+    >
+      <v-icon color="white">mdi-menu</v-icon>
+    </v-app-bar-nav-icon>
+  </div>
 </template>
 
 <script>
-export default {}
+export default {
+  data () {
+    return {
+      drawer: null,
+      menuItems: [
+        { title: 'Ana Sayfa', icon: 'mdi-home', to: '/user/dashboard' },
+        { title: 'Açık İhalelerin Görüntülenmesi', icon: 'mdi-format-list-bulleted', to: '/user/open-tenders' }
+      ]
+    }
+  },
+  mounted () {
+    this.drawer = this.$vuetify.breakpoint.mdAndUp
+  }
+}
 </script>

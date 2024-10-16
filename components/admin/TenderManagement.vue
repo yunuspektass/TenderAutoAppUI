@@ -12,77 +12,91 @@
         İhaleleri görüntüleyebilir, ekleyebilir, düzenleyebilir ve silebilirsiniz.
       </v-card-subtitle>
 
-      <v-data-table
-        :headers="headers"
-        :items="tenders"
-        class="elevation-1"
-        item-value="id"
-      >
-        <template #[`item.tenderType`]="{ item }">
-          {{ getTenderTypeLabel(item.tenderType) }}
-        </template>
+      <v-tabs v-model="activeTab" background-color="transparent" grow>
+        <v-tab v-for="tender in tenders" :key="tender.id">
+          {{ tender.title }}
+        </v-tab>
+      </v-tabs>
 
-        <template #[`item.unit`]="{ item }">
-          {{ item.unit.unitName }}
-        </template>
+      <v-tabs-items v-model="activeTab">
+        <v-tab-item v-for="tender in tenders" :key="tender.id">
+          <v-card flat>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" sm="6">
+                  <v-text-field label="Başlık" :value="tender.title" readonly />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field label="İhale Türü" :value="getTenderTypeLabel(tender.tenderType)" readonly />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field label="Başlangıç Tarihi" :value="tender.startDate | formatDate" readonly />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field label="Bitiş Tarihi" :value="tender.endDate | formatDate" readonly />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field label="Bütçe" :value="tender.budget | formatCurrency" readonly />
+                </v-col>
+                <v-col cols="12" sm="6">
+                  <v-text-field
+                    label="Birim"
+                    :value="tender.unit ? tender.unit.unitName : 'Birim Belirtilmemiş'"
+                    readonly
+                  />
+                </v-col>
+                <v-col cols="12">
+                  <v-textarea label="Açıklama" :value="tender.description" readonly />
+                </v-col>
+              </v-row>
 
-        <template #[`item.actions`]="{ item }">
-          <v-btn icon color="primary" @click="openEditTenderDialog(item)">
-            <v-icon>mdi-pencil</v-icon>
-          </v-btn>
-          <v-btn icon color="red" @click="deleteTender(item.id)">
-            <v-icon>mdi-delete</v-icon>
-          </v-btn>
-        </template>
+              <v-divider class="my-4" />
 
-        <template #[`item.budget`]="{ item }">
-          {{ item.budget | formatCurrency }}
-        </template>
+              <h3>İhale Sorumluları</h3>
+              <v-list dense>
+                <v-list-item v-for="userTender in getUserTendersByTenderId(tender.id)" :key="userTender.id">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ getUserById(userTender.userId) }}</v-list-item-title>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
 
-        <template #[`item.startDate`]="{ item }">
-          {{ item.startDate | formatDate }}
-        </template>
+              <v-divider class="my-4" />
 
-        <template #[`item.endDate`]="{ item }">
-          {{ item.endDate | formatDate }}
-        </template>
+              <h3>Ürünler</h3>
+              <v-simple-table>
+                <template #default>
+                  <thead>
+                    <tr>
+                      <th>Ürün Adı</th>
+                      <th>Miktar</th>
+                      <th>Birim Fiyat</th>
+                      <th>Toplam Fiyat</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="product in getTenderProductsByTenderId(tender.id)" :key="product.id">
+                      <td>{{ getProductById(product.productId) }}</td>
+                      <td>{{ product.quantity }}</td>
+                      <td>{{ product.unitPrice | formatCurrency }}</td>
+                      <td>{{ product.totalPrice | formatCurrency }}</td>
+                    </tr>
+                  </tbody>
+                </template>
+              </v-simple-table>
 
-        <template #[`item.responsibles`]="{ item }">
-          <v-expansion-panels flat>
-            <v-expansion-panel>
-              <v-expansion-panel-header>
-                İhale Sorumlularını Görüntüle
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <div v-for="userTender in getUserTendersByTenderId(item.id)" :key="userTender.id">
-                  {{ getUserById(userTender.userId) }}
-                </div>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </template>
-
-        <template #[`item.products`]="{ item }">
-          <v-expansion-panels flat>
-            <v-expansion-panel>
-              <v-expansion-panel-header>
-                Ürünleri Görüntüle
-              </v-expansion-panel-header>
-              <v-expansion-panel-content>
-                <div
-                  v-for="product in getTenderProductsByTenderId(item.id)"
-                  :key="product.id"
-                >
-                  {{ getProductById(product.productId) }} -
-                  Miktar: {{ product.quantity }} -
-                  Birim Fiyat: {{ product.unitPrice | formatCurrency }} -
-                  Toplam Fiyat: {{ product.totalPrice | formatCurrency }}
-                </div>
-              </v-expansion-panel-content>
-            </v-expansion-panel>
-          </v-expansion-panels>
-        </template>
-      </v-data-table>
+              <v-card-actions>
+                <v-btn color="primary" @click="openEditTenderDialog(tender)">
+                  Düzenle
+                </v-btn>
+                <v-btn color="error" @click="deleteTender(tender.id)">
+                  Sil
+                </v-btn>
+              </v-card-actions>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+      </v-tabs-items>
 
       <!-- İhale Ekle/Düzenle Dialog -->
       <v-dialog v-model="dialog" max-width="800px">
@@ -253,7 +267,8 @@ export default {
         { value: 'ClosedTender', label: 'Kapalı İhale' },
         { value: 'InvitedTender', label: 'Davetli İhale' },
         { value: 'NegotiationProcedure', label: 'Pazarlık Usulü' }
-      ]
+      ],
+      activeTab: null
     }
   },
   computed: {
@@ -321,7 +336,7 @@ export default {
         endDate: moment(tender.endDate).format('YYYY-MM-DD'),
         budget: tender.budget,
         tenderType: tender.tenderType,
-        unitId: tender.unit.id,
+        unitId: tender.unit ? tender.unit.id : null,
         userIds: this.getUserTendersByTenderId(tender.id).map(userTender => userTender.userId) || [],
         productIds: this.getTenderProductsByTenderId(tender.id).map(product => product.productId) || [],
         quantity: tender.quantity || 1,

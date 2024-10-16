@@ -77,79 +77,83 @@
       </v-col>
     </v-row>
 
-    <v-card class="mb-6">
-      <v-card-title>
-        İhaleler
-      </v-card-title>
-      <v-card-text>
-        <v-expansion-panels multiple>
-          <v-expansion-panel
-            v-for="tender in formattedCompanyTenders"
-            :key="tender.id"
-          >
-            <v-expansion-panel-header>
-              {{ tender.title }} - {{ tenderTypeLabel(tender.tenderType) }}
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <v-list>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>Başlangıç Tarihi: {{ tender.startDate | formatDate }}</v-list-item-title>
-                    <v-list-item-subtitle>Bitiş Tarihi: {{ tender.endDate | formatDate }}</v-list-item-subtitle>
-                    <v-list-item-subtitle>Açıklama: {{ tender.description }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>Teklif Miktarı: {{ tender.offerAmount | formatCurrency }}</v-list-item-title>
-                    <v-list-item-subtitle>Kazanıldı: {{ tender.won ? 'Evet' : 'Hayır' }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-                <v-divider />
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      Ürünler
-                    </v-list-item-title>
-                    <v-list-item-subtitle v-for="product in tender.products" :key="product.id">
-                      {{ product.productName }} - Miktar: {{ product.quantity }}
-                    </v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-card-text>
-    </v-card>
+    <v-card>
+      <v-tabs v-model="activeMainTab">
+        <v-tab>İhaleler</v-tab>
+        <v-tab>Şirket Sorumluları</v-tab>
+      </v-tabs>
 
-    <v-card class="mt-6">
-      <v-card-title>
-        Şirket Sorumluları
-      </v-card-title>
-      <v-card-text>
-        <v-expansion-panels>
-          <v-expansion-panel
-            v-for="user in companyUsers"
-            :key="user.id"
-          >
-            <v-expansion-panel-header>
-              {{ user.name }} {{ user.lastName }}
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <v-list dense>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-subtitle>Ad: {{ user.name }}</v-list-item-subtitle>
-                    <v-list-item-subtitle>Soyad: {{ user.lastName }}</v-list-item-subtitle>
-                    <v-list-item-subtitle>E-posta: {{ user.email }}</v-list-item-subtitle>
-                  </v-list-item-content>
-                </v-list-item>
-              </v-list>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-card-text>
+      <v-tabs-items v-model="activeMainTab">
+        <v-tab-item>
+          <v-card flat>
+            <v-tabs v-model="activeTenderTab">
+              <v-tab v-for="tender in formattedCompanyTenders" :key="tender.id">
+                {{ tender.title }}
+              </v-tab>
+            </v-tabs>
+            <v-tabs-items v-model="activeTenderTab">
+              <v-tab-item v-for="tender in formattedCompanyTenders" :key="tender.id">
+                <v-card flat>
+                  <v-card-text>
+                    <v-list>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-title>İhale Türü: {{ tenderTypeLabel(tender.tenderType) }}</v-list-item-title>
+                          <v-list-item-subtitle>Başlangıç Tarihi: {{ tender.startDate | formatDate }}</v-list-item-subtitle>
+                          <v-list-item-subtitle>Bitiş Tarihi: {{ tender.endDate | formatDate }}</v-list-item-subtitle>
+                          <v-list-item-subtitle>Açıklama: {{ tender.description }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-title>Teklif Miktarı: {{ tender.offerAmount | formatCurrency }}</v-list-item-title>
+                          <v-list-item-subtitle>Kazanıldı: {{ tender.won ? 'Evet' : 'Hayır' }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                      <v-divider />
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-title>Ürünler</v-list-item-title>
+                          <v-list-item-subtitle v-for="product in tender.products" :key="product.id">
+                            {{ product.productName }} - Miktar: {{ product.quantity }}
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-card>
+        </v-tab-item>
+
+        <v-tab-item>
+          <v-card flat>
+            <v-tabs v-model="activeUserTab">
+              <v-tab v-for="user in companyUsers" :key="user.id">
+                {{ user.name }} {{ user.lastName }}
+              </v-tab>
+            </v-tabs>
+            <v-tabs-items v-model="activeUserTab">
+              <v-tab-item v-for="user in companyUsers" :key="user.id">
+                <v-card flat>
+                  <v-card-text>
+                    <v-list dense>
+                      <v-list-item>
+                        <v-list-item-content>
+                          <v-list-item-subtitle>Ad: {{ user.name }}</v-list-item-subtitle>
+                          <v-list-item-subtitle>Soyad: {{ user.lastName }}</v-list-item-subtitle>
+                          <v-list-item-subtitle>E-posta: {{ user.email }}</v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </v-list>
+                  </v-card-text>
+                </v-card>
+              </v-tab-item>
+            </v-tabs-items>
+          </v-card>
+        </v-tab-item>
+      </v-tabs-items>
     </v-card>
   </v-container>
 
@@ -166,11 +170,15 @@ import { mapGetters } from 'vuex'
 export default {
   data () {
     return {
-      loading: true
+      loading: true,
+      activeMainTab: null,
+      activeTenderTab: null,
+      activeUserTab: null
     }
   },
   computed: {
     ...mapGetters({
+      selectedCompanyId: 'selectedCompany/getSelectedCompanyId',
       getCompanyById: 'company/getCompanyById',
       getCompanyTendersByCompanyId: 'companyTender/getCompanyTendersByCompanyId',
       getCompanyTenderStatsByCompanyId: 'companyTender/getCompanyTenderStatsByCompanyId',
@@ -180,18 +188,8 @@ export default {
       getTenderProductsByTenderId: 'tenderProduct/getTenderProductsByTenderId',
       getProducts: 'product/getProducts'
     }),
-    currentUser () {
-      return this.$auth.user || null
-    },
-    userCompany () {
-      if (this.currentUser) {
-        const userCompanies = this.$store.getters['userCompany/getUserCompaniesByUserId'](this.currentUser.id)
-        return userCompanies.length > 0 ? userCompanies[0] : null
-      }
-      return null
-    },
     company () {
-      return this.userCompany ? this.getCompanyById(this.userCompany.companyId) : null
+      return this.getCompanyById(this.selectedCompanyId)
     },
     companyName () {
       return this.company ? this.company.companyName : 'Bilinmeyen Şirket'
@@ -247,9 +245,11 @@ export default {
       })
     }
   },
-  async created () {
-    await this.initializeData()
-    this.loading = false
+  watch: {
+    selectedCompanyId: {
+      immediate: true,
+      handler: 'loadCompanyData'
+    }
   },
   methods: {
     tenderTypeLabel (tenderType) {
@@ -266,27 +266,21 @@ export default {
           return 'Bilinmeyen İhale Türü'
       }
     },
-    async initializeData () {
+    async loadCompanyData () {
+      this.loading = true
       try {
-        if (this.currentUser && this.currentUser.id) {
-          await this.$store.dispatch('userCompany/fetchUserCompanies')
+        if (this.selectedCompanyId) {
+          await this.$store.dispatch('company/fetchCompanyById', this.selectedCompanyId)
           await this.$store.dispatch('user/fetchUsers')
           await this.$store.dispatch('offer/fetchOffers')
           await this.$store.dispatch('tenderProduct/fetchTenderProducts')
           await this.$store.dispatch('product/fetchProducts')
-
-          const userCompanyList = this.$store.getters['userCompany/getUserCompaniesByUserId'](this.currentUser.id)
-          const userCompany = userCompanyList.length > 0 ? userCompanyList[0] : null
-
-          if (userCompany && userCompany.companyId) {
-            await this.$store.dispatch('companyTender/fetchCompanyTenders')
-            await this.$store.dispatch('company/fetchCompanyById', userCompany.companyId)
-          } else {
-            console.error('userCompany veya companyId bulunamadı.')
-          }
+          await this.$store.dispatch('companyTender/fetchCompanyTenders', this.selectedCompanyId)
         }
       } catch (error) {
         console.error('Veri yüklenirken hata oluştu:', error)
+      } finally {
+        this.loading = false
       }
     }
   }

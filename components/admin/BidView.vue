@@ -1,99 +1,214 @@
 <template>
   <v-container v-if="!loading" fluid>
-    <v-card class="mb-6">
-      <v-card-title class="text-h5">
-        Sonuçlandırılmış İhaleler
-      </v-card-title>
-      <v-card-subtitle>
-        Kazanan teklifleri içeren sonuçlandırılmış ihaleler aşağıda gösterilmektedir.
-      </v-card-subtitle>
+    <v-tabs v-model="activeTab" background-color="primary" dark>
+      <v-tab>Sonuçlandırılmış İhaleler</v-tab>
+      <v-tab>Aktif İhaleler</v-tab>
+    </v-tabs>
 
-      <v-data-table :headers="finishedTendersHeaders" :items="getFinishedTenders" class="elevation-1">
-        <template #[`item.awardedAmount`]="{ item }">
-          {{ item.awardedAmount ? item.awardedAmount || formatCurrency : 'Veri yok' }}
-        </template>
+    <v-tabs-items v-model="activeTab">
+      <v-tab-item>
+        <v-card flat>
+          <v-card-title class="text-h5">
+            Sonuçlandırılmış İhaleler
+          </v-card-title>
+          <v-card-subtitle>
+            Kazanan teklifleri içeren sonuçlandırılmış ihaleler aşağıda gösterilmektedir.
+          </v-card-subtitle>
 
-        <template #[`item.companyName`]="{ item }">
-          {{ getCompanyById(item.winnerCompanyId)?.companyName || 'Bilinmeyen Şirket' }}
-        </template>
+          <v-data-table
+            :headers="finishedTendersHeaders"
+            :items="getFinishedTenders"
+            class="elevation-1"
+            @click:row="showTenderDetails"
+          >
+            <template #[`item.awardedAmount`]="{ item }">
+              {{ formatAwardedAmount(item.awardedAmount) }}
+            </template>
 
-        <template #[`item.details`]="{ item }">
-          <v-list-item-subtitle>
-            Başlangıç: {{ item.startDate | formatDate }}<br>
-            Bitiş: {{ item.endDate | formatDate }}<br>
-            Açıklama: {{ item.description || 'Açıklama Yok' }}<br>
-            Sektör: {{ getCompanyById(item.winnerCompanyId)?.sector || 'Bilinmeyen Sektör' }}<br>
-            İletişim: {{ getCompanyById(item.winnerCompanyId)?.contactInformation || 'Bilinmeyen İletişim' }}
-          </v-list-item-subtitle>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template #[`item.companyName`]="{ item }">
+              {{ getCompanyById(item.winnerCompanyId)?.companyName || 'Bilinmeyen Şirket' }}
+            </template>
 
-    <v-card class="mb-6">
-      <v-card-title class="text-h5">
-        Teklif Yönetimi
-      </v-card-title>
-      <v-card-subtitle>
-        Aktif ihalelere verilen teklifler ve detaylar aşağıda listelenmektedir.
-      </v-card-subtitle>
+            <template #[`item.details`]="{ item }">
+              <v-btn color="primary" small @click.stop="showTenderDetails(item)">
+                Detaylar
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-tab-item>
 
-      <v-data-table :headers="tenderHeaders" :items="getActiveTenders" class="elevation-1">
-        <template #[`item.details`]="{ item }">
-          <v-list-item-subtitle>
-            Başlangıç: {{ item.startDate | formatDate }}<br>
-            Bitiş: {{ item.endDate | formatDate }}<br>
-            Ürünler:
-            <v-list v-for="product in getTenderProductsByTenderId(item.id)" :key="product.id" dense>
-              {{ getProductById(product.productId)?.productName || 'Bilinmeyen Ürün' }} - Miktar: {{ product.quantity }}
-            </v-list>
-          </v-list-item-subtitle>
-        </template>
+      <v-tab-item>
+        <v-card flat>
+          <v-card-title class="text-h5">
+            Teklif Yönetimi
+          </v-card-title>
+          <v-card-subtitle>
+            Aktif ihalelere verilen teklifler ve detaylar aşağıda listelenmektedir.
+          </v-card-subtitle>
 
-        <template #[`item.startDate`]="{ item }">
-          {{ item.startDate | formatDate }}
-        </template>
+          <v-data-table :headers="tenderHeaders" :items="getActiveTenders" class="elevation-1">
+            <template #[`item.details`]="{ item }">
+              <v-list-item-subtitle>
+                Başlangıç: {{ item.startDate | formatDate }}<br>
+                Bitiş: {{ item.endDate | formatDate }}<br>
+                Ürünler:
+                <v-list v-for="product in getTenderProductsByTenderId(item.id)" :key="product.id" dense>
+                  {{ getProductById(product.productId)?.productName || 'Bilinmeyen Ürün' }} - Miktar: {{ product.quantity }}
+                </v-list>
+              </v-list-item-subtitle>
+            </template>
 
-        <template #[`item.endDate`]="{ item }">
-          {{ item.endDate | formatDate }}
-        </template>
+            <template #[`item.startDate`]="{ item }">
+              {{ item.startDate | formatDate }}
+            </template>
 
-        <template #[`item.actions`]="{ item }">
-          <v-btn color="primary" icon @click.stop="toggleOffers(item.id)">
-            <v-icon>mdi-eye</v-icon> Teklifler
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template #[`item.endDate`]="{ item }">
+              {{ item.endDate | formatDate }}
+            </template>
 
-    <!-- Teklifler Card -->
-    <v-card v-if="selectedTenderOffers" class="mb-6">
-      <v-card-title class="text-h5">
-        Teklifler
-      </v-card-title>
+            <template #[`item.actions`]="{ item }">
+              <v-btn color="primary" icon @click.stop="toggleOffers(item.id)">
+                <v-icon>mdi-eye</v-icon> Teklifler
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
 
-      <v-data-table :headers="offerHeaders" :items="selectedTenderOffers" class="elevation-1">
-        <template #[`item.companyName`]="{ item }">
-          {{ getCompanyById(item.companyId)?.companyName || 'Bilinmeyen Şirket' }}
-        </template>
+        <v-card v-if="selectedTenderOffers" class="mt-6">
+          <v-card-title class="text-h5">
+            Teklifler
+          </v-card-title>
 
-        <template #[`item.amount`]="{ item }">
-          {{ item.amount | formatCurrency }}
-        </template>
+          <v-data-table :headers="offerHeaders" :items="selectedTenderOffers" class="elevation-1">
+            <template #[`item.companyName`]="{ item }">
+              {{ getCompanyById(item.companyId)?.companyName || 'Bilinmeyen Şirket' }}
+            </template>
 
-        <template #[`item.details`]="{ item }">
-          <v-list-item-subtitle>
-            İletişim: {{ getCompanyById(item.companyId)?.contactInformation || 'Bilinmeyen İletişim' }}<br>
-            Sektör: {{ getCompanyById(item.companyId)?.sector || 'Bilinmeyen Sektör' }}
-          </v-list-item-subtitle>
-        </template>
+            <template #[`item.amount`]="{ item }">
+              {{ formatCurrency(item.amount) }}
+            </template>
 
-        <template #[`item.actions`]="{ item }">
-          <v-btn color="primary" icon @click.stop="selectWinner(item.tenderId, item.id)">
-            <v-icon>mdi-check</v-icon> Kazananı Seç
-          </v-btn>
-        </template>
-      </v-data-table>
-    </v-card>
+            <template #[`item.details`]="{ item }">
+              <v-list-item-subtitle>
+                İletişim: {{ getCompanyById(item.companyId)?.contactInformation || 'Bilinmeyen İletişim' }}<br>
+                Sektör: {{ getCompanyById(item.companyId)?.sector || 'Bilinmeyen Sektör' }}
+              </v-list-item-subtitle>
+            </template>
+
+            <template #[`item.actions`]="{ item }">
+              <v-btn color="primary" icon @click.stop="selectWinner(item.tenderId, item.id)">
+                <v-icon>mdi-check</v-icon> Kazananı Seç
+              </v-btn>
+            </template>
+          </v-data-table>
+        </v-card>
+      </v-tab-item>
+    </v-tabs-items>
+
+    <v-dialog v-model="showTenderDetailsDialog" max-width="800px">
+      <v-card v-if="selectedTender">
+        <v-card-title class="text-h5">
+          {{ selectedTender.title }}
+        </v-card-title>
+        <v-card-text>
+          <v-row>
+            <v-col cols="6">
+              <h3>İhale Bilgileri</h3>
+              <v-list dense>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>İhale Türü</v-list-item-title>
+                    <v-list-item-subtitle>{{ selectedTender.tenderType }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Kazanan Teklif Miktarı</v-list-item-title>
+                    <v-list-item-subtitle>{{ formatAwardedAmount(selectedTender.awardedAmount) }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Başlangıç Tarihi</v-list-item-title>
+                    <v-list-item-subtitle>{{ selectedTender.startDate | formatDate }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Bitiş Tarihi</v-list-item-title>
+                    <v-list-item-subtitle>{{ selectedTender.endDate | formatDate }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Bütçe</v-list-item-title>
+                    <v-list-item-subtitle>{{ formatCurrency(selectedTender.budget) }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Açıklama</v-list-item-title>
+                    <v-list-item-subtitle>{{ selectedTender.description || 'Açıklama Yok' }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-col>
+            <v-col cols="6">
+              <h3>Kazanan Şirket Bilgileri</h3>
+              <v-list dense v-if="selectedTender.winnerCompanyId">
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Şirket Adı</v-list-item-title>
+                    <v-list-item-subtitle>{{ getCompanyById(selectedTender.winnerCompanyId)?.companyName || 'Bilinmeyen Şirket' }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>İletişim Bilgileri</v-list-item-title>
+                    <v-list-item-subtitle>{{ getCompanyById(selectedTender.winnerCompanyId)?.contactInformation || 'Bilinmeyen İletişim' }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+                <v-list-item>
+                  <v-list-item-content>
+                    <v-list-item-title>Sektör</v-list-item-title>
+                    <v-list-item-subtitle>{{ getCompanyById(selectedTender.winnerCompanyId)?.sector || 'Bilinmeyen Sektör' }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+              <v-alert v-else type="info" dense>
+                Henüz kazanan şirket seçilmemiş.
+              </v-alert>
+              <h3 class="mt-4">Ürünler</h3>
+              <v-list dense>
+                <v-list-item v-for="product in getTenderProductsByTenderId(selectedTender.id)" :key="product.id">
+                  <v-list-item-content>
+                    <v-list-item-title>{{ getProductById(product.productId)?.productName || 'Bilinmeyen Ürün' }}</v-list-item-title>
+                    <v-list-item-subtitle>Miktar: {{ product.quantity }}</v-list-item-subtitle>
+                  </v-list-item-content>
+                </v-list-item>
+              </v-list>
+            </v-col>
+          </v-row>
+        </v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="showTenderDetailsDialog = false">Kapat</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+
+    <v-dialog v-model="confirmDialog" max-width="400px">
+      <v-card>
+        <v-card-title class="text-h5">Kazanan Seçimi Onayı</v-card-title>
+        <v-card-text>Bu teklifi kazanan olarak seçmek istediğinizden emin misiniz?</v-card-text>
+        <v-card-actions>
+          <v-spacer></v-spacer>
+          <v-btn color="blue darken-1" text @click="confirmDialog = false">İptal</v-btn>
+          <v-btn color="blue darken-1" text @click="confirmWinner">Onayla</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-container>
 
   <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
@@ -110,6 +225,7 @@ export default {
   data () {
     return {
       loading: true,
+      activeTab: 0,
       selectedTenderOffers: null,
       finishedTendersHeaders: [
         { text: 'İhale Başlığı', value: 'title' },
@@ -129,13 +245,18 @@ export default {
         { text: 'Teklif Miktarı', value: 'amount' },
         { text: 'Detaylar', value: 'details' },
         { text: 'İşlemler', value: 'actions', sortable: false }
-      ]
+      ],
+      confirmDialog: false,
+      selectedTenderId: null,
+      selectedOfferId: null,
+      showTenderDetailsDialog: false,
+      selectedTender: null
     }
   },
   computed: {
     ...mapGetters({
       getTenders: 'tender/getTenders',
-      getFinishedTenders: 'tender/getFinishedTenders',
+      getFinishedTendersFromStore: 'tender/getFinishedTenders',
       getOffersByTenderId: 'offer/getOffersByTenderId',
       getCompanyById: 'company/getCompanyById',
       getTenderById: 'tender/getTenderById',
@@ -144,6 +265,16 @@ export default {
     }),
     getActiveTenders () {
       return this.getTenders.filter(tender => !tender.isFinished)
+    },
+    getFinishedTenders () {
+      return this.getFinishedTendersFromStore.map((tender) => {
+        const winningOffer = this.getOffersByTenderId(tender.id)
+          .find(offer => offer.companyId === tender.winnerCompanyId)
+        return {
+          ...tender,
+          awardedAmount: winningOffer ? winningOffer.amount : null
+        }
+      })
     }
   },
   async created () {
@@ -166,7 +297,16 @@ export default {
     toggleOffers (tenderId) {
       this.selectedTenderOffers = this.getOffersByTenderId(tenderId)
     },
-    async selectWinner (tenderId, offerId) {
+    selectWinner (tenderId, offerId) {
+      this.selectedTenderId = tenderId
+      this.selectedOfferId = offerId
+      this.confirmDialog = true
+    },
+    async confirmWinner () {
+      this.confirmDialog = false
+      await this.processWinner(this.selectedTenderId, this.selectedOfferId)
+    },
+    async processWinner (tenderId, offerId) {
       if (!tenderId || !offerId) {
         console.error('TenderId veya OfferId geçersiz:', { tenderId, offerId })
         return
@@ -186,7 +326,7 @@ export default {
         return
       }
 
-      const tender = this.$store.getters['tender/getTenderById'](tenderId)
+      const tender = this.getTenderById(tenderId)
 
       const productIds = this.getTenderProductsByTenderId(tenderId).map(product => product.productId) || []
 
@@ -210,20 +350,38 @@ export default {
       try {
         await this.$store.dispatch('tender/updateTender', updatedTender)
 
-        offers.forEach(async (offer) => {
-          if (offer.id !== offerId) {
-            await this.$store.dispatch('tender/updateTender', {
-              ...tender,
-              winnerCompanyId: offer.companyId,
-              awardedAmount: -offer.amount
-            })
-          }
-        })
+        for (const offer of offers) {
+          await this.$store.dispatch('companyTender/updateOrCreateCompanyTender', {
+            id: offer.id,
+            companyId: offer.companyId,
+            tenderId,
+            awardedAmount: offer.id === offerId ? offer.amount : -offer.amount,
+            productIds
+          })
+        }
 
         await this.loadData()
         this.selectedTenderOffers = null
       } catch (error) {
         console.error('Kazananı seçerken hata oluştu:', error)
+      }
+    },
+    formatAwardedAmount (amount) {
+      if (amount === null || amount === undefined) {
+        return 'Veri yok'
+      }
+      return this.formatCurrency(amount)
+    },
+    formatCurrency (value) {
+      return new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY' }).format(value)
+    },
+    showTenderDetails (tender) {
+      this.selectedTender = tender
+      this.showTenderDetailsDialog = true
+    },
+    limitRoleSelection (selectedRoles) {
+      if (selectedRoles.length > 1) {
+        this.user.roleIds = [selectedRoles[selectedRoles.length - 1]]
       }
     }
   }

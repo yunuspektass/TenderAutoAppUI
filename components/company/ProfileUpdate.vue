@@ -76,6 +76,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      selectedCompanyId: 'selectedCompany/getSelectedCompanyId',
       getCompanyById: 'company/getCompanyById',
       getUserCompaniesByUserId: 'userCompany/getUserCompaniesByUserId',
       getCompanyTendersByCompanyId: 'companyTender/getCompanyTendersByCompanyId'
@@ -83,39 +84,33 @@ export default {
     currentUser () {
       return this.$auth.user || null
     },
-    userCompany () {
-      if (this.currentUser) {
-        const userCompanies = this.getUserCompaniesByUserId(this.currentUser.id)
-        return userCompanies.length > 0 ? userCompanies[0] : null
-      }
-      return null
+    company () {
+      return this.getCompanyById(this.selectedCompanyId)
     }
   },
   watch: {
-    userCompany: {
-      handler (newVal) {
-        if (newVal) {
-          const companyData = this.getCompanyById(newVal.companyId)
-          this.companyCopy = { ...companyData }
-          this.companyCopy.userIds = this.getUserCompaniesByUserId(this.currentUser.id).map(userCompany => userCompany.userId)
-          this.companyCopy.tenderIds = this.getCompanyTendersByCompanyId(newVal.companyId).map(tender => tender.tenderId)
-        }
-      },
-      immediate: true
+    selectedCompanyId: {
+      immediate: true,
+      handler: 'loadCompanyData'
     }
   },
-  async created () {
-    await this.initializeData()
-    this.loading = false
-  },
   methods: {
-    async initializeData () {
+    async loadCompanyData () {
+      this.loading = true
       try {
-        await this.$store.dispatch('company/fetchCompanies')
-        await this.$store.dispatch('userCompany/fetchUserCompanies')
-        await this.$store.dispatch('companyTender/fetchCompanyTenders')
+        if (this.selectedCompanyId) {
+          await this.$store.dispatch('company/fetchCompanyById', this.selectedCompanyId)
+          await this.$store.dispatch('userCompany/fetchUserCompanies')
+          await this.$store.dispatch('companyTender/fetchCompanyTenders', this.selectedCompanyId)
+          const companyData = this.getCompanyById(this.selectedCompanyId)
+          this.companyCopy = { ...companyData }
+          this.companyCopy.userIds = this.getUserCompaniesByUserId(this.currentUser.id).map(userCompany => userCompany.userId)
+          this.companyCopy.tenderIds = this.getCompanyTendersByCompanyId(this.selectedCompanyId).map(tender => tender.tenderId)
+        }
       } catch (error) {
         console.error('Veri yüklenirken hata oluştu:', error)
+      } finally {
+        this.loading = false
       }
     },
     async submitCompany () {

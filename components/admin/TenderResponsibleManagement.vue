@@ -127,6 +127,7 @@ export default {
           id: user.id,
           fullName: `${user.name} ${user.lastName}`
         }))
+        .sort((a, b) => a.fullName.localeCompare(b.fullName))
     },
     tenders () {
       return this.$store.getters['tender/getTenders']

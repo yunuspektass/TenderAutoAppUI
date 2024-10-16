@@ -112,27 +112,45 @@ export default {
   },
   computed: {
     companyUsers () {
-      return this.userCompanies.map((userCompany) => {
+      const userMap = new Map()
+      this.userCompanies.forEach((userCompany) => {
         const user = this.users.find(u => u.id === userCompany.userId)
-        return {
-          id: userCompany.id,
-          userId: user ? user.id : null,
-          name: user ? user.name : '',
-          lastName: user ? user.lastName : '',
-          companies: this.getCompaniesByUserId(userCompany.userId)
+        if (user) {
+          if (!userMap.has(user.id)) {
+            userMap.set(user.id, {
+              id: user.id,
+              userId: user.id,
+              name: user.name,
+              lastName: user.lastName,
+              companies: []
+            })
+          }
+          const company = this.companies.find(c => c.id === userCompany.companyId)
+          if (company && !userMap.get(user.id).companies.some(c => c.id === company.id)) {
+            userMap.get(user.id).companies.push(company)
+          }
         }
       })
+      return Array.from(userMap.values())
     },
     users () {
       return this.$store.getters['user/getUsers']
     },
     allUsers () {
-      return this.users.filter(user =>
+      const companyResponsibles = this.users.filter(user =>
         this.$store.getters['userRole/getUserRolesByUserId'](user.id).some(role => role.roleId === 2)
-      ).map(user => ({
-        id: user.id,
-        fullName: `${user.name} ${user.lastName}`
-      }))
+      )
+
+      return companyResponsibles
+        .filter((user) => {
+          const userCompanies = this.$store.getters['userCompany/getUserCompaniesByUserId'](user.id)
+          return userCompanies.length === 0
+        })
+        .map(user => ({
+          id: user.id,
+          fullName: `${user.name} ${user.lastName}`
+        }))
+        .sort((a, b) => a.fullName.localeCompare(b.fullName))
     },
     companies () {
       return this.$store.getters['company/getCompanies']
@@ -165,7 +183,7 @@ export default {
     openEditAssignmentDialog (assignment) {
       this.dialogTitle = 'Şirket Sorumlusunu Düzenle'
       this.selectedUserId = assignment.userId
-      this.selectedCompanyIds = this.getCompaniesByUserId(assignment.userId).map(company => company.id)
+      this.selectedCompanyIds = assignment.companies.map(company => company.id)
       this.isEditMode = true
       this.dialog = true
     },
@@ -214,7 +232,10 @@ export default {
       }
     },
     async deleteAssignment (id) {
-      await this.$store.dispatch('userCompany/deleteUserCompany', id)
+      const userCompanies = this.userCompanies.filter(uc => uc.userId === id)
+      for (const userCompany of userCompanies) {
+        await this.$store.dispatch('userCompany/deleteUserCompany', userCompany.id)
+      }
       await this.fetchUpdatedUserCompanies()
     },
     async fetchUpdatedUserCompanies () {
@@ -222,7 +243,8 @@ export default {
     },
     getCompaniesByUserId (userId) {
       const userCompanies = this.$store.getters['userCompany/getUserCompaniesByUserId'](userId)
-      return userCompanies.map(uc => this.companies.find(company => company.id === uc.companyId))
+      return userCompanies
+        .map(uc => this.companies.find(company => company.id === uc.companyId))
         .filter(company => company !== undefined)
     }
   }

@@ -89,14 +89,14 @@
                 required
               />
               <v-select
-                v-model="user.roleIds"
+                v-model="selectedRoleId"
                 :items="roles"
                 item-text="roleName"
                 item-value="id"
                 label="Rol Seç"
-                multiple
-                :rules="[v => v.length > 0 || 'En az bir rol seçilmelidir']"
+                :rules="[v => !!v || 'Bir rol seçilmelidir']"
                 required
+                @change="updateRoleIds"
               />
             </v-form>
           </v-card-text>
@@ -129,6 +129,7 @@ export default {
       dialog: false,
       dialogTitle: '',
       formValid: false,
+      selectedRoleId: null,
       user: {
         id: null,
         name: '',
@@ -202,6 +203,7 @@ export default {
         address: '',
         roleIds: []
       }
+      this.selectedRoleId = null
       this.dialog = true
     },
     openEditUserDialog (user) {
@@ -209,12 +211,16 @@ export default {
       const userRoles = this.getUserRolesByUserId(user.id)
       this.user = {
         ...user,
-        roleIds: Array.isArray(userRoles) ? userRoles.map(role => role.roleId || role.id) : []
+        roleIds: Array.isArray(userRoles) && userRoles.length > 0 ? [userRoles[0].roleId || userRoles[0].id] : []
       }
+      this.selectedRoleId = this.user.roleIds[0] || null
       this.dialog = true
     },
     closeDialog () {
       this.dialog = false
+    },
+    updateRoleIds (roleId) {
+      this.user.roleIds = roleId ? [roleId] : []
     },
     async saveUser () {
       if (this.$refs.form.validate()) {
@@ -245,4 +251,3 @@ export default {
   }
 }
 </script>
-4

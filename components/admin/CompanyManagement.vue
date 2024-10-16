@@ -60,7 +60,11 @@
             <v-text-field
               v-model="company.contactInformation"
               label="İletişim Bilgileri"
-              :rules="[v => !!v || 'İletişim bilgileri zorunludur']"
+              :rules="[
+                v => !!v || 'İletişim bilgileri zorunludur',
+                v => /^[0-9]{10}$/.test(v) || 'Geçerli bir telefon numarası giriniz (10 haneli)'
+              ]"
+              placeholder="5xxxxxxxxx"
               required
             />
             <v-text-field

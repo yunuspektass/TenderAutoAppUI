@@ -162,6 +162,7 @@ export default {
   },
   computed: {
     ...mapGetters({
+      selectedCompanyId: 'selectedCompany/getSelectedCompanyId',
       getOffersByCompanyId: 'offer/getOffersByCompanyId',
       getCompanyById: 'company/getCompanyById',
       getTenders: 'tender/getTenders',
@@ -169,21 +170,19 @@ export default {
       getTenderProductsByTenderId: 'tenderProduct/getTenderProductsByTenderId',
       getProducts: 'product/getProducts'
     }),
-    currentUser () {
-      return this.$auth.user || null
+    company () {
+      return this.getCompanyById(this.selectedCompanyId)
     },
-    userCompany () {
-      if (this.currentUser) {
-        const userCompanies = this.$store.getters['userCompany/getUserCompaniesByUserId'](this.currentUser.id)
-        return userCompanies.length > 0 ? userCompanies[0] : null
-      }
-      return null
+    companyName () {
+      return this.company ? this.company.companyName : 'Bilinmeyen Şirket'
+    },
+    companyDescription () {
+      return this.company
+        ? `${this.company.companyName} şirketinin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.`
+        : 'Şirketinizin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.'
     },
     filteredOffers () {
-      if (this.userCompany) {
-        return this.getOffersByCompanyId(this.userCompany.companyId)
-      }
-      return []
+      return this.selectedCompanyId ? this.getOffersByCompanyId(this.selectedCompanyId) : []
     },
     formattedOffers () {
       return this.filteredOffers.map((offer) => {
@@ -228,44 +227,43 @@ export default {
       })
     },
     relatedTenders () {
-      if (this.userCompany) {
-        const companyTenders = this.getCompanyTendersByCompanyId(this.userCompany.companyId)
-        return this.getTenders.filter(tender => companyTenders.some(ct => ct.tender.id === tender.id))
+      if (this.selectedCompanyId) {
+        const companyTenders = this.getCompanyTendersByCompanyId(this.selectedCompanyId)
+        const existingOffers = this.getOffersByCompanyId(this.selectedCompanyId)
+
+        return this.getTenders.filter(tender =>
+          companyTenders.some(ct => ct.tender.id === tender.id) &&
+          !existingOffers.some(offer => offer.tenderId === tender.id)
+        )
       }
       return []
-    },
-    companyName () {
-      return this.userCompany && this.getCompanyById(this.userCompany.companyId)
-        ? this.getCompanyById(this.userCompany.companyId).companyName
-        : 'Bilinmeyen Şirket'
-    },
-    companyDescription () {
-      return this.userCompany && this.getCompanyById(this.userCompany.companyId)
-        ? `${this.getCompanyById(this.userCompany.companyId).companyName} şirketinin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.`
-        : 'Şirketinizin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.'
     }
   },
   watch: {
     'offer.tenderId' (newTenderId) {
       this.updateTenderDetails(newTenderId)
+    },
+    selectedCompanyId: {
+      immediate: true,
+      handler: 'loadCompanyData'
     }
   },
-  async created () {
-    await this.initializeData()
-    this.loading = false
-  },
   methods: {
-    async initializeData () {
+    async loadCompanyData () {
+      this.loading = true
       try {
-        await this.$store.dispatch('userCompany/fetchUserCompanies')
-        await this.$store.dispatch('company/fetchCompanies')
-        await this.$store.dispatch('tender/fetchTenders')
-        await this.$store.dispatch('offer/fetchOffers')
-        await this.$store.dispatch('companyTender/fetchCompanyTenders')
-        await this.$store.dispatch('tenderProduct/fetchTenderProducts')
-        await this.$store.dispatch('product/fetchProducts')
+        if (this.selectedCompanyId) {
+          await this.$store.dispatch('company/fetchCompanyById', this.selectedCompanyId)
+          await this.$store.dispatch('tender/fetchTenders')
+          await this.$store.dispatch('offer/fetchOffers')
+          await this.$store.dispatch('companyTender/fetchCompanyTenders', this.selectedCompanyId)
+          await this.$store.dispatch('tenderProduct/fetchTenderProducts')
+          await this.$store.dispatch('product/fetchProducts')
+        }
       } catch (error) {
         console.error('Veri yüklenirken hata oluştu:', error)
+      } finally {
+        this.loading = false
       }
     },
     updateTenderDetails (tenderId) {
@@ -293,7 +291,7 @@ export default {
         id: null,
         amount: 0,
         tenderId: null,
-        companyId: this.userCompany ? this.userCompany.companyId : null,
+        companyId: this.selectedCompanyId,
         offerDate: new Date().toISOString()
       }
       this.selectedTenderDetails = ''
@@ -310,7 +308,7 @@ export default {
         id: null,
         amount: 0,
         tenderId: null,
-        companyId: this.userCompany ? this.userCompany.companyId : null,
+        companyId: this.selectedCompanyId,
         offerDate: new Date().toISOString()
       }
     },
@@ -322,7 +320,7 @@ export default {
           } else {
             await this.$store.dispatch('offer/addOffer', this.offer)
           }
-          await this.initializeData()
+          await this.loadCompanyData()
           this.closeOfferDialog()
         } catch (error) {
           console.error('Teklif verilirken hata oluştu:', error)
@@ -332,7 +330,7 @@ export default {
     async deleteOffer (offerId) {
       try {
         await this.$store.dispatch('offer/deleteOffer', offerId)
-        await this.initializeData()
+        await this.loadCompanyData()
       } catch (error) {
         console.error('Teklif silinirken hata oluştu:', error)
       }

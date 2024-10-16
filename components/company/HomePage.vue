@@ -89,6 +89,8 @@
 </template>
 
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   data () {
     return {
@@ -96,40 +98,25 @@ export default {
     }
   },
   computed: {
-    currentUser () {
-      return this.$auth.user || null
-    },
-    userCompany () {
-      if (this.currentUser) {
-        const userCompanies = this.$store.getters['userCompany/getUserCompaniesByUserId'](this.currentUser.id)
-        console.log('Fetched user companies:', userCompanies)
-        return userCompanies.length > 0 ? userCompanies[0] : null
-      }
-      return null
-    },
+    ...mapGetters({
+      selectedCompanyId: 'selectedCompany/getSelectedCompanyId',
+      getCompanyById: 'company/getCompanyById',
+      getCompanyTenderStatsByCompanyId: 'companyTender/getCompanyTenderStatsByCompanyId'
+    }),
     company () {
-      if (this.userCompany) {
-        const fetchedCompany = this.$store.getters['company/getCompanyById'](this.userCompany.companyId)
-        console.log('Fetched company:', fetchedCompany)
-        return fetchedCompany
-      }
-      return null
+      return this.getCompanyById(this.selectedCompanyId)
     },
     companyName () {
-      console.log('Company name computed:', this.company ? this.company.companyName : 'Bilinmeyen Şirket')
       return this.company ? this.company.companyName : 'Bilinmeyen Şirket'
     },
     companyDescription () {
-      console.log('Company description computed:', this.company ? this.company.companyName : 'Şirketinizin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.')
       return this.company
         ? `${this.company.companyName} şirketinin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.`
         : 'Şirketinizin ihalelere katılım ve başarı durumlarını buradan takip edebilirsiniz.'
     },
     companyTenderStats () {
       if (this.company) {
-        const stats = this.$store.getters['companyTender/getCompanyTenderStatsByCompanyId'](this.company.id)
-        console.log('Company Tender Stats:', stats)
-        return stats
+        return this.getCompanyTenderStatsByCompanyId(this.company.id)
       }
       return {
         totalTenders: 0,
@@ -138,35 +125,24 @@ export default {
       }
     }
   },
-  async created () {
-    await this.initializeData()
-    this.loading = false
+  watch: {
+    selectedCompanyId: {
+      immediate: true,
+      handler: 'loadCompanyData'
+    }
   },
   methods: {
-    async initializeData () {
+    async loadCompanyData () {
+      this.loading = true
       try {
-        if (this.currentUser && this.currentUser.id) {
-          console.log('Fetching user companies for user ID:', this.currentUser.id)
-          await this.$store.dispatch('userCompany/fetchUserCompanies')
-
-          const userCompanyList = this.$store.getters['userCompany/getUserCompaniesByUserId'](this.currentUser.id)
-          const userCompany = userCompanyList.length > 0 ? userCompanyList[0] : null
-
-          console.log('Fetched User Company:', userCompany)
-
-          if (userCompany && userCompany.companyId) {
-            console.log('User Company ID found:', userCompany.companyId)
-
-            await this.$store.dispatch('companyTender/fetchCompanyTenders')
-            await this.$store.dispatch('company/fetchCompanyById', userCompany.companyId)
-
-            console.log('Company and Tenders fetched for Company ID:', userCompany.companyId)
-          } else {
-            console.error('userCompany veya companyId bulunamadı.')
-          }
+        if (this.selectedCompanyId) {
+          await this.$store.dispatch('company/fetchCompanyById', this.selectedCompanyId)
+          await this.$store.dispatch('companyTender/fetchCompanyTenders', this.selectedCompanyId)
         }
       } catch (error) {
         console.error('Veri yüklenirken hata oluştu:', error)
+      } finally {
+        this.loading = false
       }
     }
   }

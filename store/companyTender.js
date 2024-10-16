@@ -57,6 +57,28 @@ export const actions = {
     } catch (error) {
       console.error('CompanyTender silerken hata:', error)
     }
+  },
+
+  async updateOrCreateCompanyTender ({ commit, state }, companyTender) {
+    try {
+      let response
+      const existingCompanyTender = state.companyTenders.find(
+        ct => ct.companyId === companyTender.companyId && ct.tenderId === companyTender.tenderId
+      )
+      if (existingCompanyTender) {
+        response = await this.$axios.put(`/api/CompanyTender/${existingCompanyTender.id}`, companyTender)
+      } else {
+        response = await this.$axios.post('/api/CompanyTender', companyTender)
+      }
+      commit('UPDATE_COMPANY_TENDER', response.data)
+      return response.data
+    } catch (error) {
+      console.error('CompanyTender güncellenirken veya oluşturulurken hata:', error)
+      if (error.response) {
+        console.error('Sunucu yanıtı:', error.response.data)
+      }
+      throw error
+    }
   }
 }
 

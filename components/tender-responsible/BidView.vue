@@ -9,71 +9,70 @@
       </v-card-subtitle>
     </v-card>
 
-    <v-row>
-      <v-col cols="12">
-        <v-expansion-panels>
-          <v-expansion-panel v-for="offer in formattedOffers" :key="offer.id">
-            <v-expansion-panel-header>
-              {{ offer.tenderTitle }} - {{ offer.companyName }}
-            </v-expansion-panel-header>
-            <v-expansion-panel-content>
-              <v-card flat>
-                <v-card-text>
-                  <v-row>
-                    <v-col cols="12" md="6">
-                      <v-list-item>
-                        <v-list-item-content>
-                          <v-list-item-title class="text-h6">
-                            Firma Detayları
-                          </v-list-item-title>
-                          <v-list-item-subtitle>Adres: {{ offer.companyAddress }}</v-list-item-subtitle>
-                          <v-list-item-subtitle>İletişim: {{ offer.companyContact }}</v-list-item-subtitle>
-                          <v-list-item-subtitle>Sektör: {{ offer.companySector }}</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-col>
-                    <v-col cols="12" md="6">
-                      <v-list-item>
-                        <v-list-item-content>
-                          <v-list-item-title class="text-h6">
-                            İhale Detayları
-                          </v-list-item-title>
-                          <v-list-item-subtitle>Başlangıç Tarihi: {{ offer.tenderStartDate | formatDate }}</v-list-item-subtitle>
-                          <v-list-item-subtitle>Bitiş Tarihi: {{ offer.tenderEndDate | formatDate }}</v-list-item-subtitle>
-                          <v-list-item-subtitle>Açıklama: {{ offer.tenderDescription }}</v-list-item-subtitle>
-                        </v-list-item-content>
-                      </v-list-item>
-                    </v-col>
-                  </v-row>
-                  <v-divider />
+    <v-card>
+      <v-tabs v-model="activeTab" background-color="transparent" grow>
+        <v-tab v-for="offer in formattedOffers" :key="offer.id">
+          {{ offer.tenderTitle }} - {{ offer.companyName }}
+        </v-tab>
+      </v-tabs>
+
+      <v-tabs-items v-model="activeTab">
+        <v-tab-item v-for="offer in formattedOffers" :key="offer.id">
+          <v-card flat>
+            <v-card-text>
+              <v-row>
+                <v-col cols="12" md="6">
                   <v-list-item>
                     <v-list-item-content>
                       <v-list-item-title class="text-h6">
-                        Teklif Detayları
+                        Firma Detayları
                       </v-list-item-title>
-                      <v-list-item-subtitle>
-                        Teklif Miktarı: {{ offer.amount | formatCurrency }}
-                      </v-list-item-subtitle>
+                      <v-list-item-subtitle>Adres: {{ offer.companyAddress }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>İletişim: {{ offer.companyContact }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>Sektör: {{ offer.companySector }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
-                  <v-divider />
+                </v-col>
+                <v-col cols="12" md="6">
                   <v-list-item>
                     <v-list-item-content>
                       <v-list-item-title class="text-h6">
-                        Ürünler
+                        İhale Detayları
                       </v-list-item-title>
-                      <v-list-item-subtitle v-for="product in offer.tenderProducts" :key="product.id">
-                        {{ product.productName }} - Miktar: {{ product.quantity }}
-                      </v-list-item-subtitle>
+                      <v-list-item-subtitle>Başlangıç Tarihi: {{ offer.tenderStartDate | formatDate }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>Bitiş Tarihi: {{ offer.tenderEndDate | formatDate }}</v-list-item-subtitle>
+                      <v-list-item-subtitle>Açıklama: {{ offer.tenderDescription }}</v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
-                </v-card-text>
-              </v-card>
-            </v-expansion-panel-content>
-          </v-expansion-panel>
-        </v-expansion-panels>
-      </v-col>
-    </v-row>
+                </v-col>
+              </v-row>
+              <v-divider />
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="text-h6">
+                    Teklif Detayları
+                  </v-list-item-title>
+                  <v-list-item-subtitle>
+                    Teklif Miktarı: {{ offer.amount | formatCurrency }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+              <v-divider />
+              <v-list-item>
+                <v-list-item-content>
+                  <v-list-item-title class="text-h6">
+                    Ürünler
+                  </v-list-item-title>
+                  <v-list-item-subtitle v-for="product in offer.tenderProducts" :key="product.id">
+                    {{ product.productName }} - Miktar: {{ product.quantity }}
+                  </v-list-item-subtitle>
+                </v-list-item-content>
+              </v-list-item>
+            </v-card-text>
+          </v-card>
+        </v-tab-item>
+      </v-tabs-items>
+    </v-card>
   </v-container>
 
   <v-container v-else fluid class="d-flex align-center justify-center" style="height: 100vh">
@@ -89,7 +88,8 @@ import { mapGetters } from 'vuex'
 export default {
   data () {
     return {
-      loading: true
+      loading: true,
+      activeTab: null
     }
   },
   computed: {

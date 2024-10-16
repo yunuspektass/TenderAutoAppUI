@@ -2,7 +2,7 @@
   <v-app>
     <!-- Üst Navigasyon -->
     <v-app-bar app color="indigo" dark>
-      İhale Yönetim Sistemi
+      <span class="d-none d-md-flex">İhale Yönetim Sistemi</span>
 
       <v-spacer />
 
