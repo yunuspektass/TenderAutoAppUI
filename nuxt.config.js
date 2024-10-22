@@ -38,7 +38,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: process.env.API_URL || 'http://localhost:5263/api',
+    baseURL: process.env.API_URL || 'http://localhost:5263',
     headers: {
       common: {
         'Content-Type': 'application/json'
@@ -60,9 +60,9 @@ export default {
           property: false
         },
         endpoints: {
-          login: { url: '/Auth/Login', method: 'post' },
+          login: { url: '/api/Auth/Login', method: 'post' },
           logout: false,
-          user: { url: '/Auth/User', method: 'get' }
+          user: { url: '/api/Auth/User', method: 'get' }
         }
       }
     }
@@ -97,7 +97,7 @@ export default {
   // Environment variables
   publicRuntimeConfig: {
     baseURL: process.env.BASE_URL || 'http://localhost:5263',
-    apiURL: process.env.API_URL || 'http://localhost:5263/api'
+    apiURL: process.env.API_URL || 'http://localhost:5263'
   },
 
   server: {
