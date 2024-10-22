@@ -16,7 +16,7 @@ export default {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
-    ],
+    ]
   },
 
   // Global CSS: https://go.nuxtjs.dev/config-css
@@ -102,5 +102,5 @@ export default {
   publicRuntimeConfig: {
     baseURL: process.env.BASE_URL || 'http://localhost:5263',
     apiURL: process.env.API_URL || 'http://localhost:5263/api'
-  },
+  }
 }
