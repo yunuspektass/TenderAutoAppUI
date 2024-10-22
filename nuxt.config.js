@@ -36,7 +36,7 @@ export default {
     '@nuxtjs/vuetify'
   ],
 
-  // Axios module configuration: https://go.nuxtjs.dev/config-axios
+  // Axios module configuration
   axios: {
     baseURL: process.env.API_URL || 'http://localhost:5263',
     headers: {
@@ -96,7 +96,7 @@ export default {
 
   // Environment variables
   publicRuntimeConfig: {
-    baseURL: process.env.BASE_URL || 'http://localhost:5263',
+    baseURL: process.env.BASE_URL || 'http://localhost:3000',
     apiURL: process.env.API_URL || 'http://localhost:5263'
   },
 
