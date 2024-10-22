@@ -98,5 +98,10 @@ export default {
   publicRuntimeConfig: {
     baseURL: process.env.BASE_URL || 'http://localhost:5263',
     apiURL: process.env.API_URL || 'http://localhost:5263/api'
+  },
+
+  server: {
+    host: '0.0.0.0',
+    port: process.env.PORT || 8080
   }
 }
