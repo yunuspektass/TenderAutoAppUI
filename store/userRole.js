@@ -49,5 +49,6 @@ export const getters = {
     return state.userRoles
       .filter(userRole => userRole.roleId === roleId)
       .map(userRole => userRole.userId)
-  }
+  },
+  getUserRoles: state => state.userRoles
 }

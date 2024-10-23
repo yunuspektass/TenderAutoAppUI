@@ -157,7 +157,7 @@
               />
               <v-select
                 v-model="tender.userIds"
-                :items="tenderResponsibleUsers"
+                :items="filteredTenderResponsibleUsers"
                 item-text="name"
                 item-value="id"
                 label="İhale Sorumlusu Seç"
@@ -277,10 +277,20 @@ export default {
       units: 'unit/getUnits',
       getUsers: 'user/getUsers',
       getUserTendersByTenderId: 'userTender/getUserTendersByTenderId',
-      getTenderProductsByTenderId: 'tenderProduct/getTenderProductsByTenderId'
+      getTenderProductsByTenderId: 'tenderProduct/getTenderProductsByTenderId',
+      getUserRoles: 'userRole/getUserRoles'
     }),
     tenderResponsibleUsers () {
       return this.getUsers.map(user => ({
+        id: user.id,
+        name: `${user.name} ${user.lastName}`
+      }))
+    },
+    filteredTenderResponsibleUsers () {
+      return this.getUsers.filter((user) => {
+        const userRoles = this.getUserRoles.filter(role => role.userId === user.id)
+        return userRoles.some(role => role.roleId === 3)
+      }).map(user => ({
         id: user.id,
         name: `${user.name} ${user.lastName}`
       }))
@@ -300,6 +310,7 @@ export default {
         await this.$store.dispatch('product/fetchProducts')
         await this.$store.dispatch('unit/fetchUnits')
         await this.$store.dispatch('user/fetchUsers')
+        await this.$store.dispatch('userRole/fetchUserRoles')
         await this.$store.dispatch('userTender/fetchUserTenders')
         await this.$store.dispatch('tenderProduct/fetchTenderProducts')
       } catch (error) {
@@ -369,7 +380,6 @@ export default {
     },
     async saveTender () {
       if (this.$refs.form.validate()) {
-        // Tarih formatlarını düzenle
         this.tender.startDate = moment(this.tender.startDate).utc().format()
         this.tender.endDate = moment(this.tender.endDate).utc().format()
 
