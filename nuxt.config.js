@@ -60,9 +60,9 @@ export default {
           property: false
         },
         endpoints: {
-          login: { url: '/api/Auth/Login', method: 'post' },
+          login: { url: '/Auth/Login', method: 'post' },
           logout: false,
-          user: { url: '/api/Auth/User', method: 'get' }
+          user: { url: '/Auth/User', method: 'get' }
         }
       }
     }
