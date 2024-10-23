@@ -124,33 +124,28 @@ export default {
         try {
           if (this.category.id) {
             await this.$store.dispatch('category/updateCategory', this.category)
-            this.$toast.success('Kategori başarıyla güncellendi.')
+            console.log('Kategori başarıyla güncellendi.')
           } else {
             await this.$store.dispatch('category/addCategory', this.category)
-            this.$toast.success('Kategori başarıyla eklendi.')
+            console.log('Kategori başarıyla eklendi.')
           }
           await this.$store.dispatch('category/fetchCategories')
         } catch (error) {
           console.error('Kategori kaydedilirken hata:', error)
-          this.$toast.error('Kategori kaydedilirken bir hata oluştu.')
         } finally {
           this.closeDialog()
         }
       }
     },
     async deleteCategory (id) {
-      if (confirm('Bu kategoriyi silmek istediğinizden emin misiniz?')) {
-        try {
-          await this.$store.dispatch('category/deleteCategory', id)
-          await this.$store.dispatch('category/fetchCategories')
-          this.$toast.success('Kategori başarıyla silindi.')
-        } catch (error) {
-          console.error('Kategori silinirken hata:', error)
-          this.$toast.error('Kategori silinirken bir hata oluştu.')
-        }
+      try {
+        await this.$store.dispatch('category/deleteCategory', id)
+        await this.$store.dispatch('category/fetchCategories')
+        console.log('Kategori başarıyla silindi.')
+      } catch (error) {
+        console.error('Kategori silinirken hata:', error)
       }
     }
   }
 }
 </script>
-
