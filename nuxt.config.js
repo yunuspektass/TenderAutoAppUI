@@ -38,7 +38,7 @@ export default {
 
   // Axios module configuration
   axios: {
-    baseURL: process.env.API_URL || 'http://localhost:5263',
+    baseURL: process.env.API_URL || 'http://0.0.0.0:8080',
     headers: {
       common: {
         'Content-Type': 'application/json'
@@ -96,8 +96,8 @@ export default {
 
   // Environment variables
   publicRuntimeConfig: {
-    baseURL: process.env.BASE_URL || 'http://localhost:3000',
-    apiURL: process.env.API_URL || 'http://localhost:5263'
+    baseURL: process.env.BASE_URL || 'http://0.0.0.0:8080',
+    apiURL: process.env.API_URL || 'http://0.0.0.0:8080'
   },
 
   server: {
