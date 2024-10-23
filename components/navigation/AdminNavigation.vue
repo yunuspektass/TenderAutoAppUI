@@ -45,6 +45,7 @@ export default {
         { title: 'Kullanıcı Yönetimi', icon: 'mdi-account-plus', to: '/admin/user-management' },
         { title: 'İhale Yönetimi', icon: 'mdi-gavel', to: '/admin/tender-management' },
         { title: 'Firma Yönetimi', icon: 'mdi-domain', to: '/admin/company-management' },
+        { title: 'Kategori Yönetimi', icon: 'mdi-shape', to: '/admin/category-management' },
         { title: 'Ürün Yönetimi', icon: 'mdi-package-variant-closed', to: '/admin/product-management' },
         { title: 'Tekliflerin Yönetimi', icon: 'mdi-currency-usd', to: '/admin/bid-view' },
         { title: 'Birim Yönetimi', icon: 'mdi-office-building', to: '/admin/department-management' },
